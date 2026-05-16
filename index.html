@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="hi">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>कौन बनेगा दादी का लाडला?</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: radial-gradient(circle at center, #24243e 0%, #302b63 50%, #0f0c29 100%);
+      color: white;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      padding-top: env(safe-area-inset-top);
+      padding-bottom: env(safe-area-inset-bottom);
+      padding-left: env(safe-area-inset-left);
+      padding-right: env(safe-area-inset-right);
+    }
+
+    .bg-lines {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      background-image: repeating-linear-gradient(0deg, transparent, transparent 4px, rgba(255, 255, 255, 0.03) 4px, rgba(255, 255, 255, 0.03) 5px);
+      z-index: 0;
+    }
+
+    .screen {
+      display: none;
+      width: 100%;
+      height: 100%;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      position: relative;
+      z-index: 1;
+      overflow-y: auto;
+    }
+
+    .screen.active {
+      display: flex;
+    }
+
+    .gold-text {
+      color: #ffd700;
+      text-shadow: 0 0 15px rgba(255, 215, 0, 0.6);
+    }
+
+    .gold-btn {
+      background: linear-gradient(to bottom, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c);
+      color: #000;
+      font-weight: 800;
+      border: 2px solid #fff;
+      border-radius: 30px;
+      padding: 15px 30px;
+      font-size: 1.2rem;
+      cursor: pointer;
+      box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
+      transition: transform 0.1s;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    .gold-btn:active {
+      transform: scale(0.95);
+    }
+
+    input {
+      padding: 15px;
+      border-radius: 10px;
+      border: 2px solid #ffd700;
+      background: rgba(0, 0, 0, 0.5);
+      color: #fff;
+      font-size: 1.2rem;
+      text-align: center;
+      margin-bottom: 20px;
+      width: 100%;
+      max-width: 350px;
+      font-family: 'Poppins', sans-serif;
+      outline: none;
+    }
+
+    input::placeholder {
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    input:focus {
+      background: rgba(0, 0, 0, 0.8);
+      box-shadow: 0 0 10px #ffd700;
+    }
+
+    #screen-buzzer {
+      padding: 0;
+      overflow: hidden;
+    }
+
+    .buzzer-half {
+      width: 100%;
+      height: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.5rem;
+      font-weight: 800;
+      text-align: center;
+      cursor: pointer;
+      transition: filter 0.1s;
+    }
+
+    .buzzer-half:active {
+      filter: brightness(0.8);
+    }
+
+    #buzzer-top {
+      background: linear-gradient(135deg, #ff416c, #ff4b2b);
+      color: white;
+      transform: rotate(180deg);
+    }
+
+    #buzzer-bottom {
+      background: linear-gradient(135deg, #1cb5e0, #000046);
+      color: white;
+    }
+
+    .countdown-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.85);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 8rem;
+      z-index: 10;
+      font-weight: 800;
+      color: #ffd700;
+      text-shadow: 0 0 30px #ffd700;
+      pointer-events: none;
+    }
+
+    #screen-game {
+      justify-content: flex-start;
+      padding-top: 30px;
+    }
+
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      max-width: 500px;
+      margin-bottom: 20px;
+      gap: 10px;
+    }
+
+    .team-score {
+      flex: 1;
+      text-align: center;
+      background: rgba(0, 0, 0, 0.4);
+      padding: 10px;
+      border-radius: 15px;
+      border: 1px solid #555;
+      transition: 0.3s;
+      opacity: 0.6;
+    }
+
+    .team-score.active-turn {
+      opacity: 1;
+      background: rgba(255, 215, 0, 0.15);
+      border-color: #ffd700;
+      transform: scale(1.05);
+      box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+    }
+
+    .team-name-disp {
+      font-size: 1rem;
+      color: #aaa;
+      margin-bottom: 5px;
+    }
+
+    .team-score.active-turn .team-name-disp {
+      color: #fff;
+      font-weight: bold;
+    }
+
+    .score-val {
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: #ffd700;
+    }
+
+    .question-box {
+      background: rgba(0, 0, 0, 0.7);
+      border: 2px solid #ffd700;
+      border-radius: 20px;
+      padding: 25px 20px;
+      text-align: center;
+      font-size: 1.4rem;
+      font-weight: 600;
+      margin-bottom: 25px;
+      width: 100%;
+      max-width: 500px;
+      min-height: 130px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8);
+      line-height: 1.4;
+    }
+
+    .options-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      width: 100%;
+      max-width: 500px;
+      margin-bottom: 25px;
+    }
+
+    .option-btn {
+      background: #0f0c29;
+      border: 2px solid #ffd700;
+      color: white;
+      padding: 15px 10px;
+      border-radius: 50px;
+      font-size: 1.1rem;
+      text-align: center;
+      cursor: pointer;
+      transition: 0.2s;
+      position: relative;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+      font-family: 'Poppins', sans-serif;
+      font-weight: 600;
+    }
+
+    .option-btn:active {
+      transform: scale(0.95);
+    }
+
+    .option-btn.locked {
+      background: #ffd700;
+      color: #000;
+      font-weight: 800;
+      box-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
+      border-color: #fff;
+    }
+
+    .lifeline-btn {
+      background: linear-gradient(135deg, #ff4081, #c2185b);
+      border: 2px solid #fff;
+      color: white;
+      padding: 12px 25px;
+      border-radius: 30px;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      margin-bottom: 15px;
+      box-shadow: 0 4px 10px rgba(255, 64, 129, 0.5);
+      font-family: 'Poppins', sans-serif;
+      transition: 0.2s;
+    }
+
+    .lifeline-btn:active {
+      transform: scale(0.95);
+    }
+
+    .lifeline-btn:disabled {
+      background: #555;
+      color: #aaa;
+      border-color: #777;
+      box-shadow: none;
+      transform: none;
+    }
+
+    #verdict-btn {
+      display: none;
+      width: 100%;
+      max-width: 500px;
+      animation: pulse 1.5s infinite;
+      font-size: 1.3rem;
+      padding: 20px;
+    }
+
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.9);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+      flex-direction: column;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: linear-gradient(135deg, #141e30, #243b55);
+      border: 3px solid #ffd700;
+      box-shadow: 0 0 30px rgba(255, 215, 0, 0.4);
+      border-radius: 20px;
+      padding: 30px;
+      width: 100%;
+      max-width: 380px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    @keyframes pulse {
+      0% {
+        transform: scale(1);
+        box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
+      }
+
+      50% {
+        transform: scale(1.03);
+        box-shadow: 0 0 25px rgba(255, 215, 0, 0.8);
+      }
+
+      100% {
+        transform: scale(1);
+        box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
+      }
+    }
+
+    @keyframes flashText {
+      0% {
+        opacity: 1;
+        text-shadow: 0 0 20px #ff0000;
+      }
+
+      50% {
+        opacity: 0.5;
+        text-shadow: none;
+      }
+
+      100% {
+        opacity: 1;
+        text-shadow: 0 0 20px #ff0000;
+      }
+    }
+
+    .flashing {
+      animation: flashText 0.8s infinite;
+      color: #ff4081;
+    }
+
+    .celebration-text {
+      font-size: 3.5rem;
+      font-weight: 800;
+      color: #ffd700;
+      text-align: center;
+      text-shadow: 0 0 30px rgba(255, 215, 0, 1);
+      animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      line-height: 1.3;
+    }
+
+    @keyframes popIn {
+      0% {
+        transform: scale(0);
+        opacity: 0;
+      }
+
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    .emoji-confetti {
+      position: absolute;
+      font-size: 2.5rem;
+      pointer-events: none;
+      animation: fall linear forwards;
+      z-index: 100;
+    }
+
+    @keyframes fall {
+      to {
+        transform: translateY(110vh) rotate(720deg);
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="bg-lines"></div>
+
+  <!-- Screen 1: Welcome -->
+  <div id="screen-welcome" class="screen active">
+    <h3 style="margin-bottom: 10px; font-weight: 400; letter-spacing: 2px;">कौन बनेगा</h3>
+    <h1 class="gold-text"
+      style="font-size: 3.5rem; text-align: center; line-height: 1.1; margin-bottom: 40px; text-transform: uppercase;">
+      दादी का<br>लाडला?</h1>
+    <button class="gold-btn" onclick="showScreen('screen-teams'); vibrate([100]);">गेम शुरू करें</button>
+  </div>
+
+  <!-- Screen 2: Team Names -->
+  <div id="screen-teams" class="screen">
+    <h2 class="gold-text" style="margin-bottom: 30px; font-size: 1.8rem; text-align: center;">टीमों के नाम दर्ज करें
+    </h2>
+    <input type="text" id="team1-input" placeholder="टीम 1 का नाम" />
+    <input type="text" id="team2-input" placeholder="टीम 2 का नाम" />
+    <button class="gold-btn" style="margin-top: 20px;" onclick="initGame()">आगे बढ़ें</button>
+  </div>
+
+  <!-- Screen 3: Buzzer -->
+  <div id="screen-buzzer" class="screen">
+    <div id="buzzer-countdown" class="countdown-overlay" style="display:none;">3</div>
+    <div id="buzzer-top" class="buzzer-half" onclick="handleBuzzerTap(0)">
+      <span id="buzzer-t1-name">Team 1</span>
+    </div>
+    <div id="buzzer-bottom" class="buzzer-half" onclick="handleBuzzerTap(1)">
+      <span id="buzzer-t2-name">Team 2</span>
+    </div>
+  </div>
+
+  <!-- Screen 4: Game -->
+  <div id="screen-game" class="screen">
+    <button id="lifeline-btn" class="lifeline-btn" onclick="useLifeline()">दादी लाइफलाइन</button>
+
+    <div class="top-bar">
+      <div id="team1-score-container" class="team-score">
+        <div id="team1-name-disp" class="team-name-disp">Team 1</div>
+        <div id="team1-score-val" class="score-val">0</div>
+      </div>
+      <div id="team2-score-container" class="team-score">
+        <div id="team2-name-disp" class="team-name-disp">Team 2</div>
+        <div id="team2-score-val" class="score-val">0</div>
+      </div>
+    </div>
+
+    <div id="question-text" class="question-box">प्रतीक्षा करें...</div>
+
+    <div id="options-grid" class="options-grid">
+      <!-- Options dynamically inserted -->
+    </div>
+
+    <button id="verdict-btn" class="gold-btn" onclick="openDadiVerdict()">दादी का शाही फ़ैसला लें!</button>
+  </div>
+
+  <!-- Screen 5: Winner -->
+  <div id="screen-winner" class="screen">
+    <h1 class="gold-text" style="font-size: 3rem; margin-bottom: 20px;"> विजेता ! </h1>
+    <h2 id="winner-name" style="font-size: 2.5rem; margin-bottom: 10px; text-align: center;"></h2>
+    <p id="winner-score" style="font-size: 1.5rem; margin-bottom: 40px; color: #ffd700; text-align: center;"></p>
+
+    <p
+      style="font-size: 1.3rem; text-align: center; max-width: 90%; line-height: 1.6; font-style: italic; color: #eee;">
+      "दादी का सारा प्यार और आशीर्वाद ही महा-पुरस्कार है! "
+    </p>
+    <button class="gold-btn" style="margin-top: 50px;" onclick="location.reload()">फिर से खेलें</button>
+  </div>
+
+  <!-- Modals -->
+  <!-- Lifeline Modal -->
+  <div id="modal-lifeline" class="modal-overlay">
+    <div class="modal-content"
+      style="border: 3px solid #ffcc00; box-shadow: 0 0 25px rgba(255, 204, 0, 0.6); position: relative; overflow: hidden;">
+
+      <div class="dadi-photo-container" style="margin-bottom: 20px; display: flex; justify-content: center;">
+        <img src="dadi.jpeg" alt="दादी जी" style="
+        width: 140px; 
+        height: 140px; 
+        border-radius: 50%; 
+        object-fit: cover; 
+        border: 4px solid #ffcc00;
+        box-shadow: 0 0 20px #ffcc00, inset 0 0 10px rgba(0,0,0,0.5);
+        animation: dadiPulse 2s infinite ease-in-out;
+      ">
+      </div>
+
+      <h2 class="flashing"
+        style="font-size: 2.2rem; font-weight: 800; margin-bottom: 10px; color: #ff3366; text-shadow: 0 0 15px #ff3366;">
+        दादी की शरण में!</h2>
+
+      <p style="margin: 15px 0; font-size: 1.3rem; color: #e0e0e0; font-weight: bold;">(दादी से सौदेबाज़ी करें)</p>
+
+      <button class="gold-btn"
+        style="margin-top: 15px; width: 85%; padding: 12px; font-size: 1.2rem; font-weight: bold;"
+        onclick="closeLifeline()">गेम में वापस जाएं</button>
+    </div>
+  </div>
+
+  <style>
+    @keyframes dadiPulse {
+      0% {
+        transform: scale(1);
+        box-shadow: 0 0 15px #ffcc00;
+      }
+
+      50% {
+        transform: scale(1.05);
+        box-shadow: 0 0 30px #ff9900, 0 0 10px #ffcc00;
+      }
+
+      100% {
+        transform: scale(1);
+        box-shadow: 0 0 15px #ffcc00;
+      }
+    }
+  </style>
+
+  <!-- Dadi Verdict Options Modal -->
+  <div id="modal-verdict" class="modal-overlay">
+    <div class="modal-content">
+      <h2 class="gold-text" style="margin-bottom: 25px; font-size: 1.8rem;">दादी, अपना फैसला चुनें:</h2>
+      <div id="verdict-options" style="width: 100%; display: flex; flex-direction: column; gap: 15px;">
+        <!-- Verdict buttons inserted here -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Grand Verdict Overlay -->
+  <div id="modal-grand-overlay" class="modal-overlay" style="background: rgba(15, 12, 41, 0.95); z-index: 100;">
+    <div class="celebration-text">दादी का फ़ैसला<br>मंज़ूर है!</div>
+  </div>
+
+  <!-- Custom Alert Modal -->
+  <div id="modal-alert" class="modal-overlay" style="z-index: 60;">
+    <div class="modal-content">
+      <h2 id="alert-title" class="gold-text" style="font-size: 1.8rem;"></h2>
+      <p id="alert-msg" style="margin: 20px 0; font-size: 1.2rem; line-height: 1.5; color: #eee;"></p>
+      <button class="gold-btn" onclick="closeAlert()">ठीक है</button>
+    </div>
+  </div>
+
+  <script>
+    const questions = [
+      { question: "दादी का सबसे आज्ञाकारी और सीधा बच्चा कौन है?", options: ["पापा", "बुआ"], points: 50000 },
+      { question: "दादी के हाथ की बनी चाय का असली दीवाना कौन है?", options: ["दादा जी", "मम्मी", "पापा", "बुआ"], points: 50000 },
+      { question: "दादी के फोन में सबसे ज्यादा कॉल किसका आता है?", options: ["बुआ", "मामा जी", "बुआ जी", "मासी जी", "मम्मी"], points: 50000 },
+      { question: "सती सेंटर में सबसे ज्यादा पत्ते कौन दबाता है?", options: ["दादा जी", "रिदम", "दादी"], points: 50000 },
+      { question: "बचपन में दादी से सबसे ज्यादा मार किसने खाई है?", options: ["पापा", "बुआ", "कोई नहीं"], points: 50000 },
+      { question: "दादी का फेवरेट टीवी सीरियल कौन सा है?", options: ["ये रिश्ता क्या कहलाता है", "नागिन", "तारक मेहता का उल्टा चश्मा", "क्यूंकि सास भी कभी बहू थी", "दीया और बाती हम"], points: 50000 },
+      { question: "अगर दादी को अचानक एक करोड़ रुपये मिल जाएं, तो वो सबसे पहले किसे देंगी?", options: ["दादा जी", "पापा", "बुआ", "पोता", "मम्मी", "अपने पास रखेगी"], points: 50000 },
+      { question: "दादी की नजर में इस घर का सबसे बड़ा 'कामचोर' और आलसी इंसान कौन है?", options: ["दादा जी", "बुआ", "पापा", "मम्मी", "बच्चे", "कोई नहीं, सब मेहनती हैं", "सभी"], points: 50000 },
+      { question: "घर में ऐसा कौन है जिसे सुबह उठते ही सबसे पहले देश-दुनिया की नहीं, बल्कि 'कामवाली बाई आज आएगी या नहीं?' इस बात की भयंकर चिंता सताने लगती है?", options: ["मम्मी", "पापा", "दादी जी!", "खुद कामवाली बाई"], points: 50000 },
+    ];
+
+    let state = {
+      teams: [
+        { name: 'Team 1', score: 0, lifelines: 1 },
+        { name: 'Team 2', score: 0, lifelines: 1 }
+      ],
+      activeTeamIndex: 0,
+      currentQuestionIndex: 0,
+      lockedOptionIndex: null
+    };
+
+    function vibrate(pattern) {
+      if (navigator.vibrate) {
+        try { navigator.vibrate(pattern); } catch (e) { }
+      }
+    }
+
+    function formatPoints(pts) {
+      return new Intl.NumberFormat('en-IN').format(pts);
+    }
+
+    function showScreen(id) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+    }
+
+    let alertCallback = null;
+    function customAlert(title, msg, cb) {
+      document.getElementById('alert-title').innerText = title;
+      document.getElementById('alert-msg').innerText = msg;
+      document.getElementById('modal-alert').classList.add('active');
+      alertCallback = cb;
+    }
+    function closeAlert() {
+      vibrate([50]);
+      document.getElementById('modal-alert').classList.remove('active');
+      if (alertCallback) alertCallback();
+    }
+
+    function initGame() {
+      vibrate([100]);
+      const t1 = document.getElementById('team1-input').value.trim() || 'टीम 1';
+      const t2 = document.getElementById('team2-input').value.trim() || 'टीम 2';
+      state.teams[0].name = t1;
+      state.teams[1].name = t2;
+
+      document.getElementById('buzzer-t1-name').innerText = t1;
+      document.getElementById('buzzer-t2-name').innerText = t2;
+
+      showScreen('screen-buzzer');
+      startBuzzerCountdown();
+    }
+
+    let buzzerActive = false;
+    function startBuzzerCountdown() {
+      const overlay = document.getElementById('buzzer-countdown');
+      overlay.style.display = 'flex';
+      let count = 3;
+      overlay.innerText = count;
+      vibrate([100]);
+
+      const intv = setInterval(() => {
+        count--;
+        if (count > 0) {
+          overlay.innerText = count;
+          vibrate([100]);
+        } else if (count === 0) {
+          overlay.innerText = "GO!";
+          vibrate([500]);
+          buzzerActive = true;
+        } else {
+          clearInterval(intv);
+          overlay.style.display = 'none';
+        }
+      }, 1000);
+    }
+
+    function handleBuzzerTap(teamIndex) {
+      if (!buzzerActive) return;
+      buzzerActive = false;
+      vibrate([200]);
+      state.activeTeamIndex = teamIndex;
+
+      customAlert("Fastest Finger!", `${state.teams[teamIndex].name} ने पहले दबाया!\nपहली बारी उनकी है।`, () => {
+        loadQuestion();
+        showScreen('screen-game');
+      });
+    }
+
+    function loadQuestion() {
+      const q = questions[state.currentQuestionIndex];
+      if (!q) { showWinner(); return; }
+
+      state.lockedOptionIndex = null;
+
+      // Update Header
+      document.getElementById('team1-name-disp').innerText = state.teams[0].name;
+      document.getElementById('team1-score-val').innerText = formatPoints(state.teams[0].score);
+      document.getElementById('team2-name-disp').innerText = state.teams[1].name;
+      document.getElementById('team2-score-val').innerText = formatPoints(state.teams[1].score);
+
+      document.getElementById('team1-score-container').className = `team-score ${state.activeTeamIndex === 0 ? 'active-turn' : ''}`;
+      document.getElementById('team2-score-container').className = `team-score ${state.activeTeamIndex === 1 ? 'active-turn' : ''}`;
+
+      const currentTeam = state.teams[state.activeTeamIndex];
+      const lifelineBtn = document.getElementById('lifeline-btn');
+      lifelineBtn.innerText = `दादी लाइफलाइन (${currentTeam.lifelines} बाकी)`;
+      lifelineBtn.disabled = currentTeam.lifelines === 0;
+
+      document.getElementById('question-text').innerText = `Q${state.currentQuestionIndex + 1}: ${q.question}\n(${formatPoints(q.points)} पॉइंट्स)`;
+
+      const optionsGrid = document.getElementById('options-grid');
+      optionsGrid.innerHTML = '';
+      q.options.forEach((opt, idx) => {
+        const btn = document.createElement('div');
+        btn.className = 'option-btn';
+        btn.innerText = `${String.fromCharCode(65 + idx)}: ${opt}`;
+        btn.onclick = () => lockOption(idx);
+        optionsGrid.appendChild(btn);
+      });
+
+      document.getElementById('verdict-btn').style.display = 'none';
+    }
+
+    function lockOption(idx) {
+      if (state.lockedOptionIndex !== null) return;
+      vibrate([100]);
+      state.lockedOptionIndex = idx;
+
+      const btns = document.querySelectorAll('.option-btn');
+      btns[idx].classList.add('locked');
+      btns[idx].innerText += " 🔒";
+
+      const verdictBtn = document.getElementById('verdict-btn');
+      verdictBtn.style.display = 'block';
+      verdictBtn.innerText = "Lock कर दिया जाए? दादी का शाही फ़ैसला लें!";
+    }
+
+    function useLifeline() {
+      const team = state.teams[state.activeTeamIndex];
+      if (team.lifelines > 0) {
+        team.lifelines--;
+        vibrate([200, 100, 200]);
+        document.getElementById('modal-lifeline').classList.add('active');
+        const lifelineBtn = document.getElementById('lifeline-btn');
+        lifelineBtn.innerText = "दादी लाइफलाइन (0 बाकी)";
+        lifelineBtn.disabled = true;
+      }
+    }
+
+    function closeLifeline() {
+      vibrate([50]);
+      document.getElementById('modal-lifeline').classList.remove('active');
+    }
+
+    function openDadiVerdict() {
+      vibrate([50]);
+      const q = questions[state.currentQuestionIndex];
+      const verdictOptions = document.getElementById('verdict-options');
+      verdictOptions.innerHTML = '';
+
+      q.options.forEach((opt, idx) => {
+        const btn = document.createElement('button');
+        btn.className = 'gold-btn';
+        btn.innerText = opt;
+        btn.onclick = () => finalizeVerdict(idx);
+        verdictOptions.appendChild(btn);
+      });
+
+      document.getElementById('modal-verdict').classList.add('active');
+    }
+
+    function finalizeVerdict(dadiChoiceIndex) {
+      document.getElementById('modal-verdict').classList.remove('active');
+      vibrate([100, 50, 100, 50, 300]);
+
+      const overlay = document.getElementById('modal-grand-overlay');
+      overlay.classList.add('active');
+
+      setTimeout(() => {
+        overlay.classList.remove('active');
+        processResult(dadiChoiceIndex);
+      }, 3000);
+    }
+
+    function processResult(dadiChoiceIndex) {
+      const q = questions[state.currentQuestionIndex];
+      const activeTeam = state.teams[state.activeTeamIndex];
+      const nextTeam = state.teams[1 - state.activeTeamIndex];
+      const isLastQuestion = state.currentQuestionIndex === questions.length - 1;
+      const turnMsg = isLastQuestion ? "" : `\n\nअब बारी है ${nextTeam.name} की! फ़ोन पास करें।`;
+
+      if (state.lockedOptionIndex === dadiChoiceIndex) {
+        activeTeam.score += q.points;
+        customAlert("सही जवाब! ", `बधाई हो! दादी का फैसला आपके साथ है। ${activeTeam.name} ने जीते ${formatPoints(q.points)} पॉइंट्स!${turnMsg}`, nextQuestion);
+      } else {
+        customAlert("गलत जवाब! ", `उफ़! दादी ने "${q.options[dadiChoiceIndex]}" चुना। आपका जवाब गलत था।${turnMsg}`, nextQuestion);
+      }
+    }
+
+    function nextQuestion() {
+      state.currentQuestionIndex++;
+      if (state.currentQuestionIndex >= questions.length) {
+        showWinner();
+        return;
+      }
+      state.activeTeamIndex = 1 - state.activeTeamIndex;
+      loadQuestion();
+    }
+
+    function showWinner() {
+      showScreen('screen-winner');
+      vibrate([300, 100, 300, 100, 500]);
+
+      const t1 = state.teams[0];
+      const t2 = state.teams[1];
+      let winnerText = "";
+
+      if (t1.score > t2.score) winnerText = `${t1.name} जीत गए!`;
+      else if (t2.score > t1.score) winnerText = `${t2.name} जीत गए!`;
+      else winnerText = "मुकाबला टाई रहा!";
+
+      document.getElementById('winner-name').innerText = winnerText;
+      document.getElementById('winner-score').innerText = `स्कोर:\n${t1.name} (${formatPoints(t1.score)}) - ${t2.name} (${formatPoints(t2.score)})`;
+
+      createConfetti();
+    }
+
+    function createConfetti() {
+      const colors = ['💰', '👑', '🎉', '👵', '❤️', '✨'];
+      const container = document.getElementById('screen-winner');
+      for (let i = 0; i < 60; i++) {
+        const el = document.createElement('div');
+        el.innerText = colors[Math.floor(Math.random() * colors.length)];
+        el.className = 'emoji-confetti';
+        el.style.left = (Math.random() * 100) + 'vw';
+        el.style.top = '-10vh';
+        el.style.animationDuration = (Math.random() * 3 + 2) + 's';
+        el.style.animationDelay = (Math.random() * 2) + 's';
+        container.appendChild(el);
+      }
+    }
+  </script>
+</body>
+
+</html>
